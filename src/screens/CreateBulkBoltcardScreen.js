@@ -1,6 +1,5 @@
-import Clipboard from '@react-native-clipboard/clipboard';
 import {useFocusEffect} from '@react-navigation/native';
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   ActivityIndicator,
   Button,
@@ -20,6 +19,8 @@ const CardStatus = {
   WRITING: 'writing',
 };
 
+const ADMIN_URL = 'http://100.122.192.79:3000/api/cards/create?uuid=';
+
 const eventEmitter = new NativeEventEmitter();
 
 export default function CreateBulkBoltcardScreen(props) {
@@ -33,87 +34,68 @@ export default function CreateBulkBoltcardScreen(props) {
   const [key3Changed, setKey3Changed] = useState('Key 3 version pending');
   const [key4Changed, setKey4Changed] = useState('Key 4 version pending');
 
-  // Add Listeners
-  useEffect(() => {
-    const readEventListener = eventEmitter.addListener(
-      'CardHasBeenRead',
-      event => {
-        setCardReadInfo(event.cardReadInfo);
-        setNdef(event.ndef);
-        setCardUID(event.cardUID && event.cardUID.toLowerCase());
-        console.log(
-          event.key0Changed,
-          event.key1Changed,
-          event.key2Changed,
-          event.key3Changed,
-          event.key4Changed,
-        );
-        setKey0Changed('Key 0 version: ' + event.key0Changed);
-        setKey1Changed('Key 1 version: ' + event.key1Changed);
-        setKey2Changed('Key 2 version: ' + event.key2Changed);
-        setKey3Changed('Key 3 version: ' + event.key3Changed);
-        setKey4Changed('Key 4 version: ' + event.key4Changed);
-
-        eventListener.remove();
-        setReadEventListener();
-        // create request
-        requestCreateCard();
-      },
+  const onReadCard = useCallback(event => {
+    setCardReadInfo(event.cardReadInfo);
+    setNdef(event.ndef);
+    setCardUID(event.cardUID && event.cardUID.toLowerCase());
+    console.log(
+      event.key0Changed,
+      event.key1Changed,
+      event.key2Changed,
+      event.key3Changed,
+      event.key4Changed,
     );
+    setKey0Changed('Key 0 version: ' + event.key0Changed);
+    setKey1Changed('Key 1 version: ' + event.key1Changed);
+    setKey2Changed('Key 2 version: ' + event.key2Changed);
+    setKey3Changed('Key 3 version: ' + event.key3Changed);
+    setKey4Changed('Key 4 version: ' + event.key4Changed);
 
-    const writeEventListener = eventEmitter.addListener(
-      'CreateBoltCard',
-      event => {
-        if (event.tagTypeError) setTagTypeError(event.tagTypeError);
-        if (event.cardUID) setCardUID(event.cardUID);
-        if (event.tagname) setTagname(event.tagname);
+    if (event.key0Changed) {
+      alert('La tarjeta ya está configurada');
+      return;
+    }
+    // create request
+    alert(`${cardStatus} : ${ADMIN_URL}${cardUID}`);
 
-        if (event.key0Changed) setKey0Changed(event.key0Changed);
-        if (event.key1Changed) setKey1Changed(event.key1Changed);
-        if (event.key2Changed) setKey2Changed(event.key2Changed);
-        if (event.key3Changed) setKey3Changed(event.key3Changed);
-        if (event.key4Changed) setKey4Changed(event.key4Changed);
-        if (event.uid_privacy) setPrivateUID(event.uid_privacy == 'Y');
-
-        if (event.ndefWritten) setNdefWritten(event.ndefWritten);
-        if (event.writekeys) setWriteKeys(event.writekeys);
-
-        if (event.readNDEF) {
-          setNdefRead(event.readNDEF);
-          //we have the latest read from the card fire it off to the server.
-          const httpsLNURL = event.readNDEF.replace('lnurlw://', 'https://');
-          fetch(httpsLNURL)
-            .then(response => response.json())
-            .then(json => {
-              setTestBolt('success');
-            })
-            .catch(error => {
-              setTestBolt('Error: ' + error.message);
-            });
-        }
-
-        if (event.testp) setTestp(event.testp);
-        if (event.testc) setTestc(event.testc);
-
-        NativeModules.MyReactModule.setCardMode('read');
-        setWriteMode(false);
-      },
-    );
-
-    return () => {
-      readEventListener.remove();
-      writeEventListener.remove();
-
-      alert('HASDA');
-      setCardStatus(CardStatus.IDLE);
-    };
+    // requestCreateCard();
   }, []);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      NativeModules.MyReactModule.setCardMode('read');
-    }, []),
-  );
+  const onWriteCard = useCallback(event => {
+    if (event.tagTypeError) setTagTypeError(event.tagTypeError);
+    if (event.cardUID) setCardUID(event.cardUID);
+    if (event.tagname) setTagname(event.tagname);
+
+    if (event.key0Changed) setKey0Changed(event.key0Changed);
+    if (event.key1Changed) setKey1Changed(event.key1Changed);
+    if (event.key2Changed) setKey2Changed(event.key2Changed);
+    if (event.key3Changed) setKey3Changed(event.key3Changed);
+    if (event.key4Changed) setKey4Changed(event.key4Changed);
+    if (event.uid_privacy) setPrivateUID(event.uid_privacy == 'Y');
+
+    if (event.ndefWritten) setNdefWritten(event.ndefWritten);
+    if (event.writekeys) setWriteKeys(event.writekeys);
+
+    if (event.readNDEF) {
+      setNdefRead(event.readNDEF);
+      //we have the latest read from the card fire it off to the server.
+      const httpsLNURL = event.readNDEF.replace('lnurlw://', 'https://');
+      fetch(httpsLNURL)
+        .then(response => response.json())
+        .then(json => {
+          setTestBolt('success');
+        })
+        .catch(error => {
+          setTestBolt('Error: ' + error.message);
+        });
+    }
+
+    if (event.testp) setTestp(event.testp);
+    if (event.testc) setTestc(event.testc);
+
+    NativeModules.MyReactModule.setCardMode('read');
+    setWriteMode(false);
+  }, []);
 
   const resetOutput = () => {
     setTagTypeError(null);
@@ -128,16 +110,15 @@ export default function CreateBulkBoltcardScreen(props) {
     setWriteKeys(null);
   };
 
-  const writeAgain = () => {
-    resetOutput();
-    NativeModules.MyReactModule.setCardMode('createBoltcard');
-    setWriteMode(true);
-  };
-
   const requestCreateCard = async () => {
     setCardStatus(CardStatus.CREATING_CARD);
-
     // Make request to create card
+
+    ToastAndroid.showWithGravity(
+      'Making request...',
+      ToastAndroid.SHORT,
+      ToastAndroid.TOP,
+    );
   };
 
   const startReading = () => {
@@ -151,12 +132,63 @@ export default function CreateBulkBoltcardScreen(props) {
   };
 
   const startWriting = () => {
+    setCardStatus(CardStatus.WRITING);
+
     ToastAndroid.showWithGravity(
       'Start writing...',
       ToastAndroid.SHORT,
       ToastAndroid.TOP,
     );
   };
+
+  // On focus screen
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        setCardStatus(CardStatus.IDLE);
+      };
+    }),
+  );
+
+  // Add Listeners
+  useEffect(() => {
+    switch (cardStatus) {
+      case CardStatus.READING:
+        alert('subscribe readEventListener');
+
+        NativeModules.MyReactModule.setCardMode('read');
+
+        const readEventListener = eventEmitter.addListener(
+          'CardHasBeenRead',
+          onReadCard,
+        );
+
+        setWriteMode(false);
+        return () => {
+          // alert('Unsubscribed readEventListener');
+          return readEventListener.remove();
+        };
+
+      case CardStatus.WRITING:
+        alert('subscribe writeEventListener');
+        resetOutput();
+        NativeModules.MyReactModule.setCardMode('createBoltcard');
+        setWriteMode(true);
+
+        const writeEventListener = eventEmitter.addListener(
+          'CreateBoltCard',
+          onWriteCard,
+        );
+
+        return () => {
+          // alert('Unsubscribed readEventListener');
+          return writeEventListener.remove();
+        };
+
+      default:
+        setWriteMode(false);
+    }
+  }, [cardStatus]);
 
   return (
     <ScrollView style={{}}>
