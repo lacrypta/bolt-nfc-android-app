@@ -65,7 +65,7 @@ function LogoTitle(props) {
       <Image
         style={{width: 50, height: 50, marginRight: 10, marginTop: 0}}
         source={{
-          uri: 'https://avatars.githubusercontent.com/u/109875636?s=200&v=4',
+          uri: 'https://avatars.githubusercontent.com/u/112116892?s=200&v=4',
         }}
       />
       <Text style={{lineHeight: 50, fontSize: 20}}>{props.title}</Text>
