@@ -53,11 +53,19 @@ export default function CreateBulkBoltcardScreen(props) {
     setKey4Changed('Key 4 version: ' + event.key4Changed);
 
     if (event.key0Changed) {
-      alert('La tarjeta ya está configurada');
+      ToastAndroid.showWithGravity(
+        `The card is already setup`,
+        ToastAndroid.SHORT,
+        ToastAndroid.TOP,
+      );
       return;
     }
     // create request
-    alert(`${cardStatus} : ${ADMIN_URL}${cardUID}`);
+    ToastAndroid.showWithGravity(
+      `${cardStatus} : ${ADMIN_URL}${cardUID}`,
+      ToastAndroid.SHORT,
+      ToastAndroid.TOP,
+    );
 
     // requestCreateCard();
   }, []);
@@ -95,7 +103,6 @@ export default function CreateBulkBoltcardScreen(props) {
     if (event.testc) setTestc(event.testc);
 
     NativeModules.MyReactModule.setCardMode('read');
-    setWriteMode(false);
   }, []);
 
   const resetOutput = () => {
@@ -156,8 +163,6 @@ export default function CreateBulkBoltcardScreen(props) {
   useEffect(() => {
     switch (cardStatus) {
       case CardStatus.READING:
-        alert('subscribe readEventListener');
-
         NativeModules.MyReactModule.setCardMode('read');
 
         const readEventListener = eventEmitter.addListener(
@@ -165,17 +170,13 @@ export default function CreateBulkBoltcardScreen(props) {
           onReadCard,
         );
 
-        setWriteMode(false);
         return () => {
-          // alert('Unsubscribed readEventListener');
           return readEventListener.remove();
         };
 
       case CardStatus.WRITING:
-        alert('subscribe writeEventListener');
         resetOutput();
         NativeModules.MyReactModule.setCardMode('createBoltcard');
-        setWriteMode(true);
 
         const writeEventListener = eventEmitter.addListener(
           'CreateBoltCard',
@@ -183,12 +184,8 @@ export default function CreateBulkBoltcardScreen(props) {
         );
 
         return () => {
-          // alert('Unsubscribed readEventListener');
           return writeEventListener.remove();
         };
-
-      default:
-        setWriteMode(false);
     }
   }, [cardStatus]);
 
