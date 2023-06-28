@@ -1,4 +1,4 @@
-import {useFocusEffect} from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {
   ActivityIndicator,
@@ -27,6 +27,7 @@ export default function CreateBulkBoltcardScreen(props) {
   const [cardReadInfo, setCardReadInfo] = useState('');
   const [ndef, setNdef] = useState('pending...');
   const [cardUID, setCardUID] = useState();
+  const navigation = useNavigation();
   const [cardStatus, setCardStatus] = useState(CardStatus.IDLE);
   const [key0Changed, setKey0Changed] = useState('Key 0 version pending');
   const [key1Changed, setKey1Changed] = useState('Key 1 version pending');
@@ -141,14 +142,15 @@ export default function CreateBulkBoltcardScreen(props) {
     );
   };
 
-  // On focus screen
-  useFocusEffect(
-    React.useCallback(() => {
-      return () => {
-        setCardStatus(CardStatus.IDLE);
-      };
-    }),
-  );
+  // On exit screen
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('blur', () => {
+      // Do something when the screen blurs
+      setCardStatus(CardStatus.IDLE);
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   // Add Listeners
   useEffect(() => {
