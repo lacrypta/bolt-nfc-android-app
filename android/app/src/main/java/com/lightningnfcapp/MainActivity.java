@@ -1,31 +1,31 @@
-package com.lightningnfcapp;
+package com.lacrypta.cardinstaller;
 
 
-import static com.lightningnfcapp.Constants.ALIAS_DEFAULT_FF;
-import static com.lightningnfcapp.Constants.ALIAS_KEY_2KTDES;
-import static com.lightningnfcapp.Constants.ALIAS_KEY_2KTDES_ULC;
-import static com.lightningnfcapp.Constants.ALIAS_KEY_AES128;
-import static com.lightningnfcapp.Constants.ALIAS_KEY_AES128_ZEROES;
-import static com.lightningnfcapp.Constants.EMPTY_SPACE;
-import static com.lightningnfcapp.Constants.EXTRA_KEYS_STORED_FLAG;
-import static com.lightningnfcapp.Constants.KEY_AES128_DEFAULT;
-import static com.lightningnfcapp.Constants.KEY_APP_MASTER;
-import static com.lightningnfcapp.Constants.PRINT;
-import static com.lightningnfcapp.Constants.STORAGE_PERMISSION_WRITE;
-import static com.lightningnfcapp.Constants.TAG;
-import static com.lightningnfcapp.Constants.TOAST;
-import static com.lightningnfcapp.Constants.TOAST_PRINT;
-import static com.lightningnfcapp.Constants.bytesKey;
-import static com.lightningnfcapp.Constants.cipher;
-import static com.lightningnfcapp.Constants.default_ff_key;
-import static com.lightningnfcapp.Constants.default_zeroes_key;
-import static com.lightningnfcapp.Constants.iv;
-import static com.lightningnfcapp.Constants.objKEY_2KTDES;
-import static com.lightningnfcapp.Constants.objKEY_2KTDES_ULC;
-import static com.lightningnfcapp.Constants.objKEY_AES128;
+import static com.lacrypta.cardinstaller.Constants.ALIAS_DEFAULT_FF;
+import static com.lacrypta.cardinstaller.Constants.ALIAS_KEY_2KTDES;
+import static com.lacrypta.cardinstaller.Constants.ALIAS_KEY_2KTDES_ULC;
+import static com.lacrypta.cardinstaller.Constants.ALIAS_KEY_AES128;
+import static com.lacrypta.cardinstaller.Constants.ALIAS_KEY_AES128_ZEROES;
+import static com.lacrypta.cardinstaller.Constants.EMPTY_SPACE;
+import static com.lacrypta.cardinstaller.Constants.EXTRA_KEYS_STORED_FLAG;
+import static com.lacrypta.cardinstaller.Constants.KEY_AES128_DEFAULT;
+import static com.lacrypta.cardinstaller.Constants.KEY_APP_MASTER;
+import static com.lacrypta.cardinstaller.Constants.PRINT;
+import static com.lacrypta.cardinstaller.Constants.STORAGE_PERMISSION_WRITE;
+import static com.lacrypta.cardinstaller.Constants.TAG;
+import static com.lacrypta.cardinstaller.Constants.TOAST;
+import static com.lacrypta.cardinstaller.Constants.TOAST_PRINT;
+import static com.lacrypta.cardinstaller.Constants.bytesKey;
+import static com.lacrypta.cardinstaller.Constants.cipher;
+import static com.lacrypta.cardinstaller.Constants.default_ff_key;
+import static com.lacrypta.cardinstaller.Constants.default_zeroes_key;
+import static com.lacrypta.cardinstaller.Constants.iv;
+import static com.lacrypta.cardinstaller.Constants.objKEY_2KTDES;
+import static com.lacrypta.cardinstaller.Constants.objKEY_2KTDES_ULC;
+import static com.lacrypta.cardinstaller.Constants.objKEY_AES128;
 
 
-import com.lightningnfcapp.R;
+import com.lacrypta.cardinstaller.R;
 import com.nxp.nfclib.CardType;
 import com.nxp.nfclib.NxpNfcLib;
 import com.nxp.nfclib.classic.ClassicFactory;
@@ -209,7 +209,7 @@ public class MainActivity extends ReactActivity {
     // The string here (e.g. "MyReactNativeApp") has to match
     // the string in AppRegistry.registerComponent() in index.js
     Bundle initialProperties = new Bundle();
-    mReactRootView.startReactApplication(mReactInstanceManager, "lightningnfcapp", initialProperties);
+    mReactRootView.startReactApplication(mReactInstanceManager, "cardinstaller", initialProperties);
 
     /* Initialize the library and register to this activity */
     initializeLibrary();
@@ -949,7 +949,7 @@ public class MainActivity extends ReactActivity {
    */
   @Override
   protected String getMainComponentName() {
-    return "lightningnfcapp";
+    return "cardinstaller";
   }
 
   /**

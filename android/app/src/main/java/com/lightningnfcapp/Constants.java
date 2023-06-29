@@ -9,7 +9,7 @@
  */
 
 
-package com.lightningnfcapp;
+package com.lacrypta.cardinstaller;
 
 import com.nxp.nfclib.interfaces.IKeyData;
 
@@ -25,7 +25,7 @@ public class Constants {
     /**
      * String Constants
      */
-    static final String TAG = "lightningnfcapp";
+    static final String TAG = "cardinstaller";
     static final String ALIAS_KEY_AES128 = "key_aes_128";
     static final String ALIAS_KEY_2KTDES = "key_2ktdes";
     static final String ALIAS_KEY_2KTDES_ULC = "key_2ktdes_ulc";

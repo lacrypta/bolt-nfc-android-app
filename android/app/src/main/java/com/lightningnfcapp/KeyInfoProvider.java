@@ -9,13 +9,13 @@
  */
 
 
-package com.lightningnfcapp;
+package com.lacrypta.cardinstaller;
 
 import android.content.Context;
 
 import com.nxp.nfclib.defaultimpl.KeyData;
 import com.nxp.nfclib.interfaces.IKeyData;
-import com.lightningnfcapp.SampleAppKeys.EnumKeyType;
+import com.lacrypta.cardinstaller.SampleAppKeys.EnumKeyType;
 
 import java.security.Key;
 

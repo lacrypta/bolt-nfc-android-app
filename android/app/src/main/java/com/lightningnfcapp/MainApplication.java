@@ -1,4 +1,4 @@
-package com.lightningnfcapp;
+package com.lacrypta.cardinstaller;
 
 import android.app.Application;
 import com.facebook.react.PackageList;

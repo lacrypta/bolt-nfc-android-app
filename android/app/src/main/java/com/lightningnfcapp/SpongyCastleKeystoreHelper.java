@@ -9,7 +9,7 @@
  */
 
 
-package com.lightningnfcapp;
+package com.lacrypta.cardinstaller;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -17,7 +17,7 @@ import android.os.Build;
 import android.provider.Settings;
 import android.util.Base64;
 
-import com.lightningnfcapp.SampleAppKeys.EnumKeyType;
+import com.lacrypta.cardinstaller.SampleAppKeys.EnumKeyType;
 
 import org.spongycastle.asn1.x500.X500Name;
 import org.spongycastle.asn1.x500.X500NameBuilder;

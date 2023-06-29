@@ -1,6 +1,6 @@
-package com.lightningnfcapp;
+package com.lacrypta.cardinstaller;
 
-import static com.lightningnfcapp.Constants.TAG;
+import static com.lacrypta.cardinstaller.Constants.TAG;
 
 
 import com.facebook.react.*;

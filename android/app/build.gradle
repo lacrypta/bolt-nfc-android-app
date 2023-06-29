@@ -107,9 +107,9 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
     
-    namespace "com.lightningnfcapp"
+    namespace "com.lacrypta.cardinstaller"
     defaultConfig {
-        applicationId "com.lightningnfcapp"
+        applicationId "com.lacrypta.cardinstaller"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 23

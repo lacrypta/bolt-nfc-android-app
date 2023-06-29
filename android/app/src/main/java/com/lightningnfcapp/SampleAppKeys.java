@@ -8,7 +8,7 @@
  *
  */
 
-package com.lightningnfcapp;
+package com.lacrypta.cardinstaller;
 
 /**
  * Keys used by the Sample Application are declared here.

@@ -1,4 +1,4 @@
-package com.lightningnfcapp;
+package com.lacrypta.cardinstaller;
 
 import com.nxp.nfclib.NxpNfcLib;
 import com.nxp.nfclib.CardType;
