@@ -8,9 +8,12 @@ import {
   ScrollView,
   Text,
   ToastAndroid,
+  View,
 } from 'react-native';
 import {Card, Paragraph, Title} from 'react-native-paper';
 import DropDownPicker from 'react-native-dropdown-picker';
+import {generateKeys} from '../utils/card';
+
 import skins from '../constants/skins.json';
 
 const CardStatus = {
@@ -20,13 +23,13 @@ const CardStatus = {
   WRITING: 'writing',
 };
 
-const ADMIN_URL = 'http://100.122.192.79:3000/api/cards/create?uuid=';
+const ADMIN_URL = process.env.ADMIN_URL;
 
 const eventEmitter = new NativeEventEmitter();
 
 export default function CreateBulkBoltcardScreen(props) {
   const [cardUID, setCardUID] = useState();
-  const [cardData, setCardData] = useState({});
+  const [cardData, setCardData] = useState();
   const [tagTypeError, setTagTypeError] = useState();
 
   const [cardStatus, setCardStatus] = useState(CardStatus.IDLE);
@@ -60,11 +63,11 @@ export default function CreateBulkBoltcardScreen(props) {
     }
 
     // create request
-    ToastAndroid.showWithGravity(
-      `Read card ${cardUID}`,
-      ToastAndroid.SHORT,
-      ToastAndroid.TOP,
-    );
+    // ToastAndroid.showWithGravity(
+    //   `Read card ${cardUID}`,
+    //   ToastAndroid.SHORT,
+    //   ToastAndroid.TOP,
+    // );
 
     requestCreateCard(cardUID);
   }, []);
@@ -83,15 +86,13 @@ export default function CreateBulkBoltcardScreen(props) {
       fetch(httpsLNURL)
         .then(response => response.json())
         .then(json => {
-          setTestBolt('success');
+          alert(json);
+          // setTestBolt('success');
         })
         .catch(error => {
           setTestBolt('Error: ' + error.message);
         });
     }
-
-    if (event.testp) setTestp(event.testp);
-    if (event.testc) setTestc(event.testc);
 
     setCardData();
     setCardStatus(CardStatus.READING);
@@ -100,6 +101,7 @@ export default function CreateBulkBoltcardScreen(props) {
   const resetOutput = () => {
     setTagTypeError(null);
     setCardUID(null);
+    setCardData();
   };
 
   const requestCreateCard = async _cardUID => {
@@ -119,6 +121,7 @@ export default function CreateBulkBoltcardScreen(props) {
       body: JSON.stringify({
         skin,
         cardUID: _cardUID,
+        keys: generateKeys(),
       }),
     })
       .then(response => response.json())
@@ -166,6 +169,8 @@ export default function CreateBulkBoltcardScreen(props) {
         );
       })
       .catch(error => {
+        alert(error.message);
+        setCardStatus(CardStatus.IDLE);
         console.error(error);
         setError(error.message);
       });
@@ -173,12 +178,6 @@ export default function CreateBulkBoltcardScreen(props) {
 
   const startReading = () => {
     setCardStatus(CardStatus.READING);
-
-    ToastAndroid.showWithGravity(
-      'Start reading...',
-      ToastAndroid.SHORT,
-      ToastAndroid.TOP,
-    );
   };
 
   const startWriting = () => {
@@ -241,11 +240,29 @@ export default function CreateBulkBoltcardScreen(props) {
             fontSize: 15,
             textAlign: 'center',
           }}>
-          <ActivityIndicator /> Hold NFC card to Reader
+          <ActivityIndicator />
+          <Text>Hold NFC card to Reader</Text>
+
+          <View>
+            {cardStatus === CardStatus.READING ? (
+              <Button
+                onPress={() => {
+                  onReadCard({cardUID: '1234567890'});
+                }}
+                title="read"
+              />
+            ) : (
+              <Button onPress={() => alert('WRITE')} title="write" />
+            )}
+          </View>
         </Text>
       ) : (
         <Card style={{marginBottom: 20, marginHorizontal: 10}}>
-          <Button onPress={startReading} title="Start reading" />
+          <Button
+            disabled={!skin}
+            onPress={startReading}
+            title="Start reading"
+          />
         </Card>
       )}
 
