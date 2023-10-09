@@ -8,9 +8,9 @@ import {
   ScrollView,
   Text,
   ToastAndroid,
-  View,
 } from 'react-native';
 import {Card, Paragraph, Title} from 'react-native-paper';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 const CardStatus = {
   IDLE: 'idle',
@@ -30,6 +30,23 @@ export default function CreateBulkBoltcardScreen(props) {
 
   const [cardStatus, setCardStatus] = useState(CardStatus.IDLE);
   const [error, setError] = useState();
+
+  const [openSkin, setOpenSkin] = useState(false);
+  const [skin, setSkin] = useState();
+
+  const [items, setItems] = useState([
+    {label: 'La Crypta', value: 'lacrypta'},
+    {label: 'Blanca', value: 'white', parent: 'lacrypta'},
+    {label: 'Halloween', value: 'halloween', parent: 'lacrypta'},
+
+    {label: 'LABITCONF', value: 'labitconf'},
+    {label: 'LABITCONF', value: 'labitconf23', parent: 'labitconf'},
+    {label: 'To the moon', value: 'tothemoon', parent: 'labitconf'},
+    {label: 'Lightning', value: 'lightning', parent: 'labitconf'},
+    {label: 'Lunar Punk', value: 'lunar', parent: 'labitconf'},
+    {label: 'Solar Punk', value: 'solar', parent: 'labitconf'},
+    {label: 'Honeybadger', value: 'honeybadger', parent: 'labitconf'},
+  ]);
 
   const navigation = useNavigation();
 
@@ -246,10 +263,29 @@ export default function CreateBulkBoltcardScreen(props) {
         </Card.Content>
       </Card>
 
-      <Card style={{marginBottom: 20, marginHorizontal: 10}}>
+      <Card style={{marginBottom: 20, marginHorizontal: 10, zIndex: 1000}}>
         <Card.Content>
-          <Title>Seleccioná la skin</Title>
-          <Text>asdas</Text>
+          <Title>Card skin</Title>
+          <DropDownPicker
+            open={openSkin}
+            value={skin}
+            items={items}
+            setOpen={setOpenSkin}
+            setValue={setSkin}
+            setItems={setItems}
+            theme="LIGHT"
+            multiple={false}
+            mode="BADGE"
+            badgeDotColors={[
+              '#e76f51',
+              '#00b4d8',
+              '#e9c46a',
+              '#e76f51',
+              '#8ac926',
+              '#00b4d8',
+              '#e9c46a',
+            ]}
+          />
         </Card.Content>
       </Card>
 
