@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import {Card, Paragraph, Title} from 'react-native-paper';
 import DropDownPicker from 'react-native-dropdown-picker';
+import skins from '../constants/skins.json';
 
 const CardStatus = {
   IDLE: 'idle',
@@ -34,19 +35,7 @@ export default function CreateBulkBoltcardScreen(props) {
   const [openSkin, setOpenSkin] = useState(false);
   const [skin, setSkin] = useState();
 
-  const [items, setItems] = useState([
-    {label: 'La Crypta', value: 'lacrypta'},
-    {label: 'Blanca', value: 'white', parent: 'lacrypta'},
-    {label: 'Halloween', value: 'halloween', parent: 'lacrypta'},
-
-    {label: 'LABITCONF', value: 'labitconf'},
-    {label: 'LABITCONF', value: 'labitconf23', parent: 'labitconf'},
-    {label: 'To the moon', value: 'tothemoon', parent: 'labitconf'},
-    {label: 'Lightning', value: 'lightning', parent: 'labitconf'},
-    {label: 'Lunar Punk', value: 'lunar', parent: 'labitconf'},
-    {label: 'Solar Punk', value: 'solar', parent: 'labitconf'},
-    {label: 'Honeybadger', value: 'honeybadger', parent: 'labitconf'},
-  ]);
+  const [items, setItems] = useState(skins);
 
   const navigation = useNavigation();
 
@@ -117,7 +106,7 @@ export default function CreateBulkBoltcardScreen(props) {
     setCardStatus(CardStatus.CREATING_CARD);
     // Make request to create card
 
-    const url = `${ADMIN_URL}${_cardUID}`;
+    const url = `${ADMIN_URL}`;
     // create request
     ToastAndroid.showWithGravity(
       `Creating card : ${url}`,
@@ -125,7 +114,13 @@ export default function CreateBulkBoltcardScreen(props) {
       ToastAndroid.TOP,
     );
 
-    fetch(url)
+    fetch(url, {
+      method: 'POST',
+      body: JSON.stringify({
+        skin,
+        cardUID: _cardUID,
+      }),
+    })
       .then(response => response.json())
       .then(json => {
         if (!json.success) {
