@@ -34,8 +34,8 @@ export default function CreateBulkBoltcardScreen(props) {
   const navigation = useNavigation();
 
   const onReadCard = useCallback(event => {
-    const cardUID = event.cardUID && event.cardUID.toLowerCase();
-    setCardUID(cardUID);
+    const _cardUID = event.cardUID?.toLowerCase();
+    setCardUID(_cardUID);
     console.log(
       event.key0Changed,
       event.key1Changed,
@@ -96,11 +96,11 @@ export default function CreateBulkBoltcardScreen(props) {
     setCardUID(null);
   };
 
-  const requestCreateCard = async cardUID => {
+  const requestCreateCard = async _cardUID => {
     setCardStatus(CardStatus.CREATING_CARD);
     // Make request to create card
 
-    const url = `${ADMIN_URL}${cardUID}`;
+    const url = `${ADMIN_URL}${_cardUID}`;
     // create request
     ToastAndroid.showWithGravity(
       `Creating card : ${url}`,
@@ -243,6 +243,13 @@ export default function CreateBulkBoltcardScreen(props) {
           <Paragraph style={{fontWeight: 'bold', fontSize: 15}}>
             Falta escanear 1 vez
           </Paragraph>
+        </Card.Content>
+      </Card>
+
+      <Card style={{marginBottom: 20, marginHorizontal: 10}}>
+        <Card.Content>
+          <Title>Seleccioná la skin</Title>
+          <Text>asdas</Text>
         </Card.Content>
       </Card>
 
