@@ -1,13 +1,10 @@
 [
-  {"label": "La Crypta", "value": "lacrypta"},
-  {"label": "Blanca", "value": "white", "parent": "lacrypta"},
-  {"label": "Halloween", "value": "halloween", "parent": "lacrypta"},
-
-  {"label": "LABITCONF", "value": "labitconf"},
-  {"label": "LABITCONF", "value": "labitconf23", "parent": "labitconf"},
-  {"label": "To the moon", "value": "tothemoon", "parent": "labitconf"},
-  {"label": "Lightning", "value": "lightning", "parent": "labitconf"},
-  {"label": "Lunar Punk", "value": "lunar", "parent": "labitconf"},
-  {"label": "Solar Punk", "value": "solar", "parent": "labitconf"},
-  {"label": "Honeybadger", "value": "honeybadger", "parent": "labitconf"}
+  {"label": "Blanca", "value": "white"},
+  {"label": "Halloween", "value": "halloween"},
+  {"label": "LABITCONF", "value": "labitconf23"},
+  {"label": "To the moon", "value": "tothemoon"},
+  {"label": "Lightning", "value": "lightning"},
+  {"label": "Lunar Punk", "value": "lunar"},
+  {"label": "Solar Punk", "value": "solar"},
+  {"label": "Honeybadger", "value": "honeybadger"}
 ]
