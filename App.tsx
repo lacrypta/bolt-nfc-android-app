@@ -172,7 +172,7 @@ export default function App(props) {
                   initialParams={{data: null}}
                 />
                 <CreateBoltcardStack.Screen
-                  name="ScanScreen"
+                  name="ScanScreenReset"
                   component={ScanScreen}
                 />
               </CreateBoltcardStack.Navigator>
@@ -184,7 +184,7 @@ export default function App(props) {
             component={CreateBulkBoltcardScreen}
           />
 
-          <Tab.Screen
+          {/* <Tab.Screen
             name="Link QR"
             component={LinkCardQRScreen}
             options={{
@@ -192,6 +192,31 @@ export default function App(props) {
                 <LogoTitle title="Link Card to QR" {...props} />
               ),
             }}
+          /> */}
+
+          <Tab.Screen
+            name="Link QR"
+            options={{
+              headerTitle: props => (
+                <LogoTitle title="Link Card to QR" {...props} />
+              ),
+            }}
+            children={() => (
+              <CreateBoltcardStack.Navigator
+                screenOptions={{
+                  headerShown: false,
+                }}>
+                <CreateBoltcardStack.Screen
+                  name="Link QR Main"
+                  component={LinkCardQRScreen}
+                  initialParams={{data: null}}
+                />
+                <CreateBoltcardStack.Screen
+                  name="ScanScreen"
+                  component={ScanScreen}
+                />
+              </CreateBoltcardStack.Navigator>
+            )}
           />
           <Tab.Screen
             name="Help"
@@ -200,10 +225,6 @@ export default function App(props) {
               headerTitle: props => <LogoTitle title="Help" {...props} />,
             }}
           />
-          {/* <Tab.Screen 
-            name="Test" 
-            component={TestScreen} 
-          /> */}
         </Tab.Navigator>
       </NavigationContainer>
       <ErrorModal

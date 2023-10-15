@@ -18,7 +18,7 @@ export default function LinkCardQRScreen({route}) {
   }, [data]);
 
   const startScan = () => {
-    navigation.navigate('ScanScreen', {backScreen: 'Link QR'});
+    navigation.navigate('ScanScreen', {backScreen: 'Link QR Main'});
   };
   return (
     <ScrollView>
