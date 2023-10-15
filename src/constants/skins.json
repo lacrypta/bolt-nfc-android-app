@@ -1,10 +1,14 @@
 [
-  {"label": "Blanca", "value": "white"},
+  {"label": "Blank", "value": "blank"},
   {"label": "Halloween", "value": "halloween"},
   {"label": "LABITCONF", "value": "labitconf23"},
   {"label": "To the moon", "value": "tothemoon"},
-  {"label": "Lightning", "value": "lightning"},
   {"label": "Lunar Punk", "value": "lunar"},
   {"label": "Solar Punk", "value": "solar"},
-  {"label": "Honeybadger", "value": "honeybadger"}
+  {"label": "Honeybadger", "value": "honeybadger"},
+  {"label": "Lightning", "value": "lightning"},
+  {"label": "Revolution", "value": "revolution"},
+  {"label": "Halving is coming", "value": "halvingiscoming"},
+  {"label": "Theres no second best", "value": "secondbest"},
+  {"label": "* LABITCONF Green", "value": "labitconfgreen"}
 ]
