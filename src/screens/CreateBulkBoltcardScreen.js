@@ -1,18 +1,21 @@
+/* eslint-disable no-alert */
 import {useNavigation} from '@react-navigation/native';
 import React, {useCallback, useEffect, useState} from 'react';
+import {Dropdown} from 'react-native-element-dropdown';
 import {
   ActivityIndicator,
   Button,
   NativeEventEmitter,
   NativeModules,
   ScrollView,
+  StyleSheet,
   Text,
   ToastAndroid,
   View,
 } from 'react-native';
 import {Card, Paragraph, Title} from 'react-native-paper';
-import DropDownPicker from 'react-native-dropdown-picker';
 import {generateKeys} from '../utils/card';
+import Config from 'react-native-config';
 
 import skins from '../constants/skins.json';
 
@@ -23,7 +26,7 @@ const CardStatus = {
   WRITING: 'writing',
 };
 
-const ADMIN_URL = process.env.ADMIN_URL;
+const ADMIN_URL = Config.ADMIN_URL;
 
 const eventEmitter = new NativeEventEmitter();
 
@@ -55,26 +58,23 @@ export default function CreateBulkBoltcardScreen(props) {
 
     if (event.key0Changed) {
       ToastAndroid.showWithGravity(
-        `The card is already setup`,
+        'The card is already setup',
         ToastAndroid.SHORT,
         ToastAndroid.TOP,
       );
       return;
     }
 
-    // create request
-    // ToastAndroid.showWithGravity(
-    //   `Read card ${cardUID}`,
-    //   ToastAndroid.SHORT,
-    //   ToastAndroid.TOP,
-    // );
-
-    requestCreateCard(cardUID);
+    requestCreateCard(_cardUID, skin);
   }, []);
 
   const onWriteCard = useCallback(event => {
-    if (event.tagTypeError) setTagTypeError(event.tagTypeError);
-    if (event.cardUID) setCardUID(event.cardUID);
+    if (event.tagTypeError) {
+      setTagTypeError(event.tagTypeError);
+    }
+    if (event.cardUID) {
+      setCardUID(event.cardUID);
+    }
 
     if (!event.ndefWritten || !event.writekeys) {
       console.error("We didn't get the ndefWritten or writekeys");
@@ -90,7 +90,7 @@ export default function CreateBulkBoltcardScreen(props) {
           // setTestBolt('success');
         })
         .catch(error => {
-          setTestBolt('Error: ' + error.message);
+          alert('Error: ' + error.message);
         });
     }
 
@@ -104,77 +104,84 @@ export default function CreateBulkBoltcardScreen(props) {
     setCardData();
   };
 
-  const requestCreateCard = async _cardUID => {
-    setCardStatus(CardStatus.CREATING_CARD);
-    // Make request to create card
+  const requestCreateCard = useCallback(
+    async (_cardUID, _skin) => {
+      setCardStatus(CardStatus.CREATING_CARD);
+      // Make request to create card
 
-    const url = `${ADMIN_URL}`;
-    // create request
-    ToastAndroid.showWithGravity(
-      `Creating card : ${url}`,
-      ToastAndroid.SHORT,
-      ToastAndroid.TOP,
-    );
+      const url = `${ADMIN_URL}`;
+      // create request
+      ToastAndroid.showWithGravity(
+        `Creating card : ${url}`,
+        ToastAndroid.SHORT,
+        ToastAndroid.TOP,
+      );
 
-    fetch(url, {
-      method: 'POST',
-      body: JSON.stringify({
-        skin,
-        cardUID: _cardUID,
-        keys: generateKeys(),
-      }),
-    })
-      .then(response => response.json())
-      .then(json => {
-        if (!json.success) {
-          setError(data.reason);
-          return;
-        }
-        const data = json.data;
-        if (
-          !(
-            data.lnurlw_base &&
-            data.k0 &&
-            data.k1 &&
-            data.k2 &&
-            data.k3 &&
-            data.k4
-          )
-        ) {
-          setError(
-            'The JSON response must contain lnurlw_base, k0, k1, k2, k3, k4 ',
-          );
-          return;
-        }
-
-        setCardData(data);
-        NativeModules.MyReactModule.changeKeys(
-          data.lnurlw_base,
-          data.k0,
-          data.k1,
-          data.k2,
-          data.k3,
-          data.k4,
-          false, // data.uid_privacy != undefined && data.uid_privacy == 'Y',
-          response => {
-            ToastAndroid.showWithGravity(
-              'Card Written!',
-              ToastAndroid.SHORT,
-              ToastAndroid.TOP,
-            );
-
-            console.log('Change keys response', response);
-            if (response == 'Success') startWriting();
-          },
-        );
+      console.info('skin', _skin);
+      console.info('cardUID', _cardUID);
+      fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          skin,
+          cardUID: _cardUID,
+          keys: generateKeys(),
+        }),
       })
-      .catch(error => {
-        alert(error.message);
-        setCardStatus(CardStatus.IDLE);
-        console.error(error);
-        setError(error.message);
-      });
-  };
+        .then(response => response.json())
+        .then(json => {
+          if (!json.success) {
+            setError(data.reason);
+            return;
+          }
+          const data = json.data;
+          if (
+            !(
+              data.lnurlw_base &&
+              data.k0 &&
+              data.k1 &&
+              data.k2 &&
+              data.k3 &&
+              data.k4
+            )
+          ) {
+            setError(
+              'The JSON response must contain lnurlw_base, k0, k1, k2, k3, k4 ',
+            );
+            return;
+          }
+
+          setCardData(data);
+          NativeModules.MyReactModule.changeKeys(
+            data.lnurlw_base,
+            data.k0,
+            data.k1,
+            data.k2,
+            data.k3,
+            data.k4,
+            false, // data.uid_privacy != undefined && data.uid_privacy == 'Y',
+            response => {
+              ToastAndroid.showWithGravity(
+                'Card Written!',
+                ToastAndroid.SHORT,
+                ToastAndroid.TOP,
+              );
+
+              console.log('Change keys response', response);
+              if (response === 'Success') {
+                startWriting();
+              }
+            },
+          );
+        })
+        .catch(_error => {
+          alert(_error.message);
+          setCardStatus(CardStatus.IDLE);
+          console.error(_error);
+          setError(_error.message);
+        });
+    },
+    [skin],
+  );
 
   const startReading = () => {
     setCardStatus(CardStatus.READING);
@@ -228,6 +235,7 @@ export default function CreateBulkBoltcardScreen(props) {
           return writeEventListener.remove();
         };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cardStatus]);
 
   return (
@@ -266,7 +274,7 @@ export default function CreateBulkBoltcardScreen(props) {
         </Card>
       )}
 
-      <Card style={{marginBottom: 20, marginHorizontal: 10}}>
+      <Card style={styles.card}>
         <Card.Content>
           <Title>Status ({cardStatus})</Title>
           <Paragraph style={{fontWeight: 'bold', fontSize: 15}}>
@@ -278,42 +286,42 @@ export default function CreateBulkBoltcardScreen(props) {
       <Card style={{marginBottom: 20, marginHorizontal: 10, zIndex: 1000}}>
         <Card.Content>
           <Title>Card skin</Title>
-          <DropDownPicker
-            open={openSkin}
+
+          <Dropdown
+            style={[styles.dropdown, openSkin && {borderColor: 'blue'}]}
+            placeholderStyle={styles.placeholderStyle}
+            selectedTextStyle={styles.selectedTextStyle}
+            data={skins}
+            search
+            maxHeight={300}
+            labelField="label"
+            valueField="value"
+            placeholder={!openSkin ? 'Select item' : '...'}
+            searchPlaceholder="Search..."
             value={skin}
-            items={items}
-            setOpen={setOpenSkin}
-            setValue={setSkin}
-            setItems={setItems}
-            theme="LIGHT"
-            multiple={false}
-            mode="BADGE"
-            badgeDotColors={[
-              '#e76f51',
-              '#00b4d8',
-              '#e9c46a',
-              '#e76f51',
-              '#8ac926',
-              '#00b4d8',
-              '#e9c46a',
-            ]}
+            onFocus={() => setOpenSkin(true)}
+            onBlur={() => setOpenSkin(false)}
+            onChange={item => {
+              setSkin(item.value);
+              setOpenSkin(false);
+            }}
           />
         </Card.Content>
       </Card>
 
-      <Card style={{marginBottom: 20, marginHorizontal: 10}}>
+      <Card style={styles.card}>
         <Card.Content>
           <Title>Check URLs and Keys</Title>
           <Text>Aca va algo</Text>
         </Card.Content>
-        <Card.Actions style={{justifyContent: 'space-around'}}>
+        <Card.Actions style={styles.spaceAround}>
           {cardStatus === CardStatus.WRITING && (
             <Text>Apoya para escribir</Text>
           )}
         </Card.Actions>
       </Card>
 
-      <Card style={{marginBottom: 20, marginHorizontal: 10}}>
+      <Card style={styles.card}>
         <Card.Content>
           <Title>Error</Title>
           <Text>error: {error}</Text>
@@ -321,7 +329,7 @@ export default function CreateBulkBoltcardScreen(props) {
         </Card.Content>
       </Card>
 
-      <Card style={{marginBottom: 20, marginHorizontal: 10}}>
+      <Card style={styles.card}>
         <Card.Content>
           <Title>Card Data</Title>
           <Text>{JSON.stringify(cardData)}</Text>
@@ -330,3 +338,20 @@ export default function CreateBulkBoltcardScreen(props) {
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    marginBottom: 20,
+    marginHorizontal: 10,
+  },
+  spaceAround: {
+    justifyContent: 'space-around',
+  },
+  dropdown: {
+    height: 50,
+    borderColor: 'gray',
+    borderWidth: 0.5,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+  },
+});
