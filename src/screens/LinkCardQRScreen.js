@@ -25,6 +25,8 @@ export default function LinkCardQRScreen({route}) {
   // get data from QR
   const {data} = route.params || {};
 
+  const [cardNonce, setCardNonce] = React.useState();
+
   // use navigation
   const navigation = useNavigation();
 
@@ -43,7 +45,7 @@ export default function LinkCardQRScreen({route}) {
     if (!data) {
       return;
     }
-    alert(`HAY DATA: ${data}`);
+    setCardNonce(data);
     setLinkStatus(LinkStatus.TAPPING);
   }, [data]);
 
@@ -72,29 +74,37 @@ export default function LinkCardQRScreen({route}) {
 
   const onReadCard = event => {
     const {cardId} = event;
-    alert(`Card ID: ${cardId}`);
+    alert(`Card ID: ${cardId} with nonce ${cardNonce}`);
   };
 
   return (
     <ScrollView>
       <>
-        <Card style={styles.card}>
-          <Card.Content>
-            <Title>Scan QR Code</Title>
-            <Text>First scan QR Code</Text>
-          </Card.Content>
-          <Card.Actions style={styles.spaceAround}>
-            <Button
-              onPress={() => setLinkStatus(LinkStatus.SCANNING)}
-              title="Scan QR Code"
-            />
-          </Card.Actions>
-        </Card>
-        <Dialog.Container visible={false}>
+        {linkStatus === LinkStatus.IDLE && (
+          <Card style={styles.card}>
+            <Card.Content>
+              <Title>Scan QR Code</Title>
+              <Text>First scan QR Code</Text>
+            </Card.Content>
+            <Card.Actions style={styles.spaceAround}>
+              <Button
+                onPress={() => setLinkStatus(LinkStatus.SCANNING)}
+                title="Scan QR Code"
+              />
+            </Card.Actions>
+          </Card>
+        )}
+
+        <Dialog.Container visible={!!cardNonce}>
           <Dialog.Title style={styles.textBlack}>Tap card baby</Dialog.Title>
-          <Dialog.Description>Tap card</Dialog.Description>
-          <Dialog.Button label="Cancel" onPress={() => {}} />
-          <Dialog.Button label="Continue" onPress={() => {}} />
+          <Dialog.Description>NONCE ID: {cardNonce}</Dialog.Description>
+          <Dialog.Button
+            label="Cancel"
+            onPress={() => {
+              setCardNonce();
+              setLinkStatus(LinkStatus.IDLE);
+            }}
+          />
         </Dialog.Container>
       </>
     </ScrollView>
