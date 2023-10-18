@@ -70,11 +70,13 @@ export default function CreateBulkBoltcardScreen(props) {
     requestCreateCard(_cardUID, skin);
   }, []);
 
-  const onWriteCard = useCallback((event, vntw) => {
+  const onWriteCard = useCallback(event => {
     console.info('event: ');
     console.dir(event);
-    console.info('vntw:');
-    console.dir('vntw', vntw);
+    if (!event) {
+      alert('Event not found');
+      return;
+    }
     if (event.tagTypeError) {
       setTagTypeError(event.tagTypeError);
     }
@@ -174,7 +176,7 @@ export default function CreateBulkBoltcardScreen(props) {
             response => {
               console.log('Change keys response', response);
               if (response === 'Success') {
-                startWriting();
+                setCardStatus(CardStatus.WRITING);
               }
             },
           );
@@ -194,12 +196,12 @@ export default function CreateBulkBoltcardScreen(props) {
     await NfcManager.requestTechnology(NfcTech.IsoDep);
     const tag = await NfcManager.getTag();
 
-    alert(tag);
+    console.info('tag:');
+    console.dir(tag);
+    onReadCard(tag);
   };
 
-  const startWriting = () => {
-    setCardStatus(CardStatus.WRITING);
-  };
+  const startWriting = () => {};
 
   // On exit screen
   useEffect(() => {
@@ -230,6 +232,7 @@ export default function CreateBulkBoltcardScreen(props) {
 
       case CardStatus.WRITING:
         resetOutput();
+        // startWriting();
         NativeModules.MyReactModule.setCardMode('createBoltcard');
 
         const writeEventListener = eventEmitter.addListener(
