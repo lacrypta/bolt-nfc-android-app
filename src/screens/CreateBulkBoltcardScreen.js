@@ -5,8 +5,6 @@ import {Dropdown} from 'react-native-element-dropdown';
 import {
   ActivityIndicator,
   Button,
-  NativeEventEmitter,
-  NativeModules,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,12 +12,13 @@ import {
   View,
   Image,
 } from 'react-native';
-import {Card, Paragraph, Title} from 'react-native-paper';
+import {Card, Title} from 'react-native-paper';
 import {generateKeys} from '../utils/card';
 import Config from 'react-native-config';
 
 import skins from '../constants/skins';
 import NfcManager, {NfcTech} from 'react-native-nfc-manager';
+import WriteModal from '../components/WriteModal';
 
 const CardStatus = {
   IDLE: 'idle',
@@ -30,12 +29,8 @@ const CardStatus = {
 
 const ADMIN_URL = Config.ADMIN_URL;
 
-const eventEmitter = new NativeEventEmitter();
-
 export default function CreateBulkBoltcardScreen(props) {
-  const [cardUID, setCardUID] = useState();
   const [cardData, setCardData] = useState();
-  const [tagTypeError, setTagTypeError] = useState();
 
   const [cardStatus, setCardStatus] = useState(CardStatus.IDLE);
   const [error, setError] = useState();
@@ -43,80 +38,32 @@ export default function CreateBulkBoltcardScreen(props) {
   const [openSkin, setOpenSkin] = useState(false);
   const [skin, setSkin] = useState();
 
-  const [items, setItems] = useState(skins);
-
   const navigation = useNavigation();
 
-  const onReadCard = useCallback(event => {
-    const _cardUID = event.cardUID?.toLowerCase();
-    setCardUID(_cardUID);
-    console.log(
-      event.key0Changed,
-      event.key1Changed,
-      event.key2Changed,
-      event.key3Changed,
-      event.key4Changed,
-    );
-
-    if (event.key0Changed) {
-      ToastAndroid.showWithGravity(
-        'The card is already setup',
-        ToastAndroid.SHORT,
-        ToastAndroid.TOP,
+  const onReadCard = useCallback(
+    event => {
+      const _cardUID = event.id?.toLowerCase();
+      console.log(
+        event.key0Changed,
+        event.key1Changed,
+        event.key2Changed,
+        event.key3Changed,
+        event.key4Changed,
       );
-      return;
-    }
 
-    requestCreateCard(_cardUID, skin);
-  }, []);
+      if (event.key0Changed) {
+        ToastAndroid.showWithGravity(
+          'The card is already setup',
+          ToastAndroid.SHORT,
+          ToastAndroid.TOP,
+        );
+        return;
+      }
 
-  const onWriteCard = useCallback(event => {
-    console.info('event: ');
-    console.dir(event);
-    if (!event) {
-      alert('Event not found');
-      return;
-    }
-    if (event.tagTypeError) {
-      setTagTypeError(event.tagTypeError);
-    }
-    if (event.cardUID) {
-      setCardUID(event.cardUID);
-    }
-
-    if (!event.ndefWritten || !event.writekeys) {
-      console.error("We didn't get the ndefWritten or writekeys");
-    }
-
-    if (event.readNDEF) {
-      //we have the latest read from the card fire it off to the server.
-      const httpsLNURL = event.readNDEF.replace('lnurlw://', 'https://');
-      fetch(httpsLNURL)
-        .then(response => response.json())
-        .then(json => {
-          console.dir(json);
-          alert(json);
-          ToastAndroid.showWithGravity(
-            'Card Written!',
-            ToastAndroid.SHORT,
-            ToastAndroid.TOP,
-          );
-          // setTestBolt('success');
-        })
-        .catch(error => {
-          alert('Error: ' + error.message);
-        });
-    }
-
-    setCardData();
-    setCardStatus(CardStatus.READING);
-  }, []);
-
-  const resetOutput = () => {
-    setTagTypeError(null);
-    setCardUID(null);
-    setCardData();
-  };
+      requestCreateCard(_cardUID, skin);
+    },
+    [requestCreateCard, skin],
+  );
 
   const requestCreateCard = useCallback(
     async (_cardUID, _skin) => {
@@ -163,26 +110,11 @@ export default function CreateBulkBoltcardScreen(props) {
             );
             return;
           }
-
+          setCardStatus(CardStatus.WRITING);
           setCardData(data);
-          NativeModules.MyReactModule.changeKeys(
-            data.lnurlw_base,
-            data.k0,
-            data.k1,
-            data.k2,
-            data.k3,
-            data.k4,
-            false, // data.uid_privacy != undefined && data.uid_privacy == 'Y',
-            response => {
-              console.log('Change keys response', response);
-              if (response === 'Success') {
-                setCardStatus(CardStatus.WRITING);
-              }
-            },
-          );
         })
         .catch(_error => {
-          alert(_error.message);
+          // alert(_error.message);
           setCardStatus(CardStatus.IDLE);
           console.error(_error);
           setError(_error.message);
@@ -191,23 +123,31 @@ export default function CreateBulkBoltcardScreen(props) {
     [skin],
   );
 
-  const startReading = async () => {
-    console.info('START reading...');
-    await NfcManager.requestTechnology(NfcTech.IsoDep);
-    const tag = await NfcManager.getTag();
+  const startReading = useCallback(async () => {
+    await NfcManager.start();
+    await NfcManager.cancelTechnologyRequest();
+    await NfcManager.clearBackgroundTag();
+    try {
+      console.info('START reading...');
+      await NfcManager.requestTechnology(NfcTech.IsoDep);
+      const tag = await NfcManager.getTag();
 
-    console.info('tag:');
-    console.dir(tag);
-    onReadCard(tag);
-  };
-
-  const startWriting = () => {};
+      console.info('tag:');
+      console.dir(tag);
+      onReadCard(tag);
+    } catch (e) {
+      setCardStatus(CardStatus.IDLE);
+      alert(e);
+      console.error(e);
+    }
+  }, [onReadCard]);
 
   // On exit screen
   useEffect(() => {
     const unsubscribe = navigation.addListener('blur', () => {
       // Do something when the screen blurs
       setCardStatus(CardStatus.IDLE);
+      NfcManager.cancelTechnologyRequest();
     });
 
     return unsubscribe;
@@ -217,39 +157,24 @@ export default function CreateBulkBoltcardScreen(props) {
   useEffect(() => {
     switch (cardStatus) {
       case CardStatus.READING:
-        // NativeModules.MyReactModule.setCardMode('read');
-
-        // const readEventListener = eventEmitter.addListener(
-        //   'CardHasBeenRead',
-        //   onReadCard,
-        // );
-
-        // return () => {
-        //   return readEventListener.remove();
-        // };
+        setCardData();
         startReading();
         break;
 
-      case CardStatus.WRITING:
-        resetOutput();
-        // startWriting();
-        NativeModules.MyReactModule.setCardMode('createBoltcard');
-
-        const writeEventListener = eventEmitter.addListener(
-          'CreateBoltCard',
-          onWriteCard,
-        );
-
-        return () => {
-          return writeEventListener.remove();
-        };
+      default:
+        setCardData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cardStatus]);
 
+  // On mount
+  useEffect(() => {
+    // NfcManager.start();
+  }, []);
+
   return (
     <ScrollView style={{}}>
-      {[CardStatus.READING, CardStatus.WRITING].includes(cardStatus) ? (
+      {cardStatus === CardStatus.READING ? (
         <Text
           style={{
             margin: 20,
@@ -261,22 +186,19 @@ export default function CreateBulkBoltcardScreen(props) {
           <Text>Hold NFC card to Reader</Text>
 
           <View>
-            {cardStatus === CardStatus.READING ? (
-              <Button
-                onPress={() => {
-                  onReadCard({cardUID: '1234567890'});
-                }}
-                title="read"
-              />
-            ) : (
-              <Button onPress={() => alert('WRITE')} title="write" />
-            )}
+            <Button
+              onPress={() => {
+                onReadCard({cardUID: '1234567890'});
+                // setCardStatus(CardStatus.WRITING);
+              }}
+              title="read"
+            />
           </View>
         </Text>
       ) : (
         <>
-          {skin && (
-            <Card style={{marginBottom: 10, marginHorizontal: 10}}>
+          {skin && cardStatus === CardStatus.IDLE && (
+            <Card style={{marginHorizontal: 10}}>
               <Button
                 onPress={() => setCardStatus(CardStatus.READING)}
                 title="Start reading"
@@ -286,7 +208,13 @@ export default function CreateBulkBoltcardScreen(props) {
         </>
       )}
 
-      <Card style={{marginBottom: 20, marginHorizontal: 10, zIndex: 1000}}>
+      <Card
+        style={{
+          marginBottom: 20,
+          marginTop: 10,
+          marginHorizontal: 10,
+          zIndex: 1000,
+        }}>
         <Card.Content>
           {cardStatus === CardStatus.IDLE && (
             <>
@@ -313,31 +241,11 @@ export default function CreateBulkBoltcardScreen(props) {
             </>
           )}
 
-          {skin && (
-            <Image
-              style={{
-                width: '100%',
-                height: 200,
-                borderRadius: 15,
-              }}
-              // source={require()}
-              source={skin.file}
-            />
-          )}
-          {/* <Text>{skin}</Text> */}
+          {skin && <Image style={styles.cardImage} source={skin.file} />}
         </Card.Content>
       </Card>
 
-      <Card style={styles.card}>
-        <Card.Content>
-          <Title>Status ({cardStatus})</Title>
-          <Paragraph style={{fontWeight: 'bold', fontSize: 15}}>
-            Falta escanear 1 vez
-          </Paragraph>
-        </Card.Content>
-      </Card>
-
-      {(cardStatus !== CardStatus.IDLE || skin) && (
+      {(cardStatus === CardStatus.READING || skin) && (
         <Card style={styles.card}>
           <Card.Content>
             <Button
@@ -350,6 +258,12 @@ export default function CreateBulkBoltcardScreen(props) {
           </Card.Content>
         </Card>
       )}
+      <WriteModal
+        visible={cardStatus === CardStatus.WRITING}
+        onCancel={() => setCardStatus(CardStatus.IDLE)}
+        onSuccess={() => setCardStatus(CardStatus.READING)}
+        cardData={cardData}
+      />
     </ScrollView>
   );
 }
@@ -369,5 +283,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 8,
     marginBottom: 10,
+  },
+  text: {
+    fontSize: 20,
+    textAlign: 'center',
+    borderColor: 'black',
+  },
+  cardImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 15,
   },
 });
