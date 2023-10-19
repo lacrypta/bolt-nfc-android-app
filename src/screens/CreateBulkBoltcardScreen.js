@@ -9,7 +9,6 @@ import {
   StyleSheet,
   Text,
   ToastAndroid,
-  View,
   Image,
 } from 'react-native';
 import {Card, Title} from 'react-native-paper';
@@ -114,7 +113,7 @@ export default function CreateBulkBoltcardScreen(props) {
           setCardData(data);
         })
         .catch(_error => {
-          // alert(_error.message);
+          alert(_error.message);
           setCardStatus(CardStatus.IDLE);
           console.error(_error);
           setError(_error.message);
@@ -184,16 +183,6 @@ export default function CreateBulkBoltcardScreen(props) {
           }}>
           <ActivityIndicator />
           <Text>Hold NFC card to Reader</Text>
-
-          <View>
-            <Button
-              onPress={() => {
-                onReadCard({cardUID: '1234567890'});
-                // setCardStatus(CardStatus.WRITING);
-              }}
-              title="read"
-            />
-          </View>
         </Text>
       ) : (
         <>

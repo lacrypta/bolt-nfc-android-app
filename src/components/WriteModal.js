@@ -165,6 +165,7 @@ export default function WriteModal(props) {
 
   // On cardData change
   useEffect(() => {
+    setError();
     if (!cardData) {
       return;
     }
