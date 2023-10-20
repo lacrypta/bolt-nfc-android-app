@@ -1,23 +1,16 @@
 import {useNavigation} from '@react-navigation/core';
-import React, {useEffect} from 'react';
-import {
-  Button,
-  NativeEventEmitter,
-  NativeModules,
-  ScrollView,
-  StyleSheet,
-  Text,
-} from 'react-native';
+import React, {useCallback, useEffect, useState} from 'react';
+import {Button, ScrollView, StyleSheet, Text} from 'react-native';
 import Dialog from 'react-native-dialog';
-import {Card, Title} from 'react-native-paper';
+import NfcManager, {NfcTech} from 'react-native-nfc-manager';
+import {ActivityIndicator, Card, Title} from 'react-native-paper';
 
 const LinkStatus = {
   IDLE: 'idle',
-  SCANNING: 'scanning',
   TAPPING: 'tapping',
+  SCANNING: 'scanning',
+  LINKING: 'linking',
 };
-
-const eventEmitter = new NativeEventEmitter();
 
 export default function LinkCardQRScreen({route}) {
   // status
@@ -25,7 +18,8 @@ export default function LinkCardQRScreen({route}) {
   // get data from QR
   const {data} = route.params || {};
 
-  const [cardNonce, setCardNonce] = React.useState();
+  const [cardNonce, setCardNonce] = useState();
+  const [cardId, setCardId] = useState();
 
   // use navigation
   const navigation = useNavigation();
@@ -46,36 +40,61 @@ export default function LinkCardQRScreen({route}) {
       return;
     }
     setCardNonce(data);
-    setLinkStatus(LinkStatus.TAPPING);
+    setLinkStatus(LinkStatus.LINKING);
   }, [data]);
 
   // On status change
   useEffect(() => {
     switch (linkStatus) {
+      case LinkStatus.TAPPING:
+        setCardId();
+        setCardNonce();
+        startReading();
+        break;
       case LinkStatus.SCANNING:
+        setCardNonce();
         navigation.navigate('ScanScreen', {backScreen: 'Link QR Main'});
         break;
-      case LinkStatus.TAPPING:
-        NativeModules.MyReactModule.setCardMode('read');
+      case LinkStatus.LINKING:
+        startLinking();
+        break;
 
-        const readEventListener = eventEmitter.addListener(
-          'CardHasBeenRead',
-          onReadCard,
-        );
-
-        return () => {
-          return readEventListener.remove();
-        };
       default:
+        setCardId();
+        setCardNonce();
         break;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [linkStatus]);
 
-  const onReadCard = event => {
-    const {cardId} = event;
-    alert(`Card ID: ${cardId} with nonce ${cardNonce}`);
-  };
+  const onReadCard = useCallback(event => {
+    const {id} = event;
+    setCardId(id);
+    setLinkStatus(LinkStatus.SCANNING);
+  }, []);
+
+  const startReading = useCallback(async () => {
+    await NfcManager.start();
+    await NfcManager.cancelTechnologyRequest();
+    await NfcManager.clearBackgroundTag();
+    try {
+      console.info('START reading...');
+      await NfcManager.requestTechnology(NfcTech.IsoDep);
+      const tag = await NfcManager.getTag();
+
+      console.info('tag:');
+      console.dir(tag);
+      onReadCard(tag);
+    } catch (e) {
+      setLinkStatus(LinkStatus.IDLE);
+      alert(e);
+      console.error(e);
+    }
+  }, [onReadCard]);
+
+  const startLinking = useCallback(async () => {
+    alert(`cardId : ${cardId} \n cardNonce : ${cardNonce}`);
+  }, [cardId, cardNonce]);
 
   return (
     <ScrollView>
@@ -83,21 +102,23 @@ export default function LinkCardQRScreen({route}) {
         {linkStatus === LinkStatus.IDLE && (
           <Card style={styles.card}>
             <Card.Content>
-              <Title>Scan QR Code</Title>
-              <Text>First scan QR Code</Text>
+              <Title>Tap Card</Title>
+              <Text>First tap card</Text>
             </Card.Content>
             <Card.Actions style={styles.spaceAround}>
               <Button
-                onPress={() => setLinkStatus(LinkStatus.SCANNING)}
-                title="Scan QR Code"
+                onPress={() => setLinkStatus(LinkStatus.TAPPING)}
+                title="Tap card"
               />
             </Card.Actions>
           </Card>
         )}
 
-        <Dialog.Container visible={!!cardNonce}>
+        <Dialog.Container visible={linkStatus === LinkStatus.TAPPING}>
           <Dialog.Title style={styles.textBlack}>Tap card baby</Dialog.Title>
-          <Dialog.Description>NONCE ID: {cardNonce}</Dialog.Description>
+          <Text style={styles.activity}>
+            <ActivityIndicator size="large" />
+          </Text>
           <Dialog.Button
             label="Cancel"
             onPress={() => {
@@ -120,5 +141,10 @@ const styles = StyleSheet.create({
 
   spaceAround: {
     justifyContent: 'space-around',
+  },
+
+  activity: {
+    textAlign: 'center',
+    padding: 20,
   },
 });
