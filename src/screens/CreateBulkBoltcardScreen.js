@@ -18,6 +18,8 @@ import Config from 'react-native-config';
 import skins from '../constants/skins';
 import NfcManager, {NfcTech} from 'react-native-nfc-manager';
 import WriteModal from '../components/WriteModal';
+import {createInitializeCardEvent} from '../lib/utils';
+import {getEventHash, getPublicKey, getSignature} from 'nostr-tools';
 
 const CardStatus = {
   IDLE: 'idle',
@@ -27,6 +29,7 @@ const CardStatus = {
 };
 
 const ADMIN_URL = Config.ADMIN_URL;
+const NOSTR_PRIVATE_KEY = Config.NOSTR_PRIVATE_KEY;
 
 export default function CreateBulkBoltcardScreen(props) {
   const [cardData, setCardData] = useState();
@@ -69,7 +72,7 @@ export default function CreateBulkBoltcardScreen(props) {
       setCardStatus(CardStatus.CREATING_CARD);
       // Make request to create card
 
-      const url = `${ADMIN_URL}`;
+      const url = `${ADMIN_URL}/ntag424`;
       // create request
       ToastAndroid.showWithGravity(
         `Creating card : ${url}`,
@@ -77,15 +80,20 @@ export default function CreateBulkBoltcardScreen(props) {
         ToastAndroid.TOP,
       );
 
+      const event = createInitializeCardEvent(_cardUID, {
+        uuid: _skin.value,
+        name: _skin.label,
+      });
+
+      event.pubkey = getPublicKey(NOSTR_PRIVATE_KEY);
+      event.id = getEventHash(event);
+      event.sig = getSignature(event, NOSTR_PRIVATE_KEY);
+
       console.info('skin', _skin);
       console.info('cardUID', _cardUID);
       fetch(url, {
         method: 'POST',
-        body: JSON.stringify({
-          skin,
-          cardUID: _cardUID,
-          keys: generateKeys(),
-        }),
+        body: JSON.stringify(event),
       })
         .then(response => response.json())
         .then(json => {
@@ -93,7 +101,7 @@ export default function CreateBulkBoltcardScreen(props) {
             setError(data.reason);
             return;
           }
-          const data = json.data;
+          const data = json.data.content;
           if (
             !(
               data.lnurlw_base &&
