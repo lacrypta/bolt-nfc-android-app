@@ -1,5 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { Image, Modal, NativeEventEmitter, Pressable, StyleSheet, Text, View, NativeModules, Platform } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {
+  Image,
+  Modal,
+  NativeEventEmitter,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  NativeModules,
+  Platform,
+} from 'react-native';
 
 import {DefaultTheme, Provider as PaperProvider} from 'react-native-paper';
 
@@ -10,13 +20,12 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import NfcManager from 'react-native-nfc-manager';
 import Toast from 'react-native-toast-message';
 
-import CreateBoltcardScreen from './src/screens/CreateBoltcardScreen';
+import LinkCardQRScreen from './src/screens/LinkCardQRScreen';
 import CreateBulkBoltcardScreen from './src/screens/CreateBulkBoltcardScreen';
 import HelpScreen from './src/screens/HelpScreen';
 import ReadNFCScreen from './src/screens/ReadNFCScreen';
 import ResetKeysScreen from './src/screens/ResetKeysScreen';
 import ScanScreen from './src/screens/ScanScreen';
-import TestScreen from './src/screens/TestScreen';
 
 import {LogBox} from 'react-native';
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
@@ -35,23 +44,23 @@ const theme = {
 
 const Tab = createBottomTabNavigator();
 const CreateBoltcardStack = createNativeStackNavigator();
-const AdvancedStack = createNativeStackNavigator();
+// const AdvancedStack = createNativeStackNavigator();
 
-function CreateBoltcardStackScreen() {
-  return (
-    <CreateBoltcardStack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}>
-      <CreateBoltcardStack.Screen
-        name="CreateBoltcardScreen"
-        component={CreateBoltcardScreen}
-        initialParams={{data: null}}
-      />
-      <CreateBoltcardStack.Screen name="ScanScreen" component={ScanScreen} />
-    </CreateBoltcardStack.Navigator>
-  );
-}
+// function LinkCardQRScreen() {
+//   return (
+//     <CreateBoltcardStack.Navigator
+//       screenOptions={{
+//         headerShown: false,
+//       }}>
+//       <CreateBoltcardStack.Screen
+//         name="CreateBoltcardScreen"
+//         component={LinkCardQRScreen}
+//         initialParams={{data: null}}
+//       />
+//       <CreateBoltcardStack.Screen name="ScanScreen" component={ScanScreen} />
+//     </CreateBoltcardStack.Navigator>
+//   );
+// }
 
 function LogoTitle(props) {
   return (
@@ -107,13 +116,13 @@ export default function App(props) {
   };
 
   useEffect(() => {
-    if(Platform.OS == 'android') {
+    if (Platform.OS == 'android') {
       const eventEmitter = new NativeEventEmitter();
-      const eventListener = eventEmitter.addListener('NFCError', (event) => {
+      const eventListener = eventEmitter.addListener('NFCError', event => {
         setModalText(event.message);
         setModalVisible(true);
       });
-  
+
       return () => {
         eventListener.remove();
       };
@@ -128,8 +137,8 @@ export default function App(props) {
             tabBarIcon: ({focused, color, size}) => {
               let iconName;
 
-              if (route.name === 'Create Bolt Card') {
-                iconName = focused ? 'card' : 'card-outline';
+              if (route.name === 'Link QR') {
+                iconName = focused ? 'qr-code' : 'qr-code-outline';
               } else if (route.name === 'Create Bulk Bolt Card') {
                 iconName = focused
                   ? 'file-tray-stacked'
@@ -151,16 +160,6 @@ export default function App(props) {
             tabBarInactiveTintColor: 'gray',
           })}>
           <Tab.Screen
-            name="Create Bolt Card"
-            children={() => <CreateBoltcardStackScreen />}
-            options={{
-              headerTitle: props => (
-                <LogoTitle title="Create Bolt Card" {...props} />
-              ),
-            }}
-          />
-
-          <Tab.Screen
             name="Reset Keys"
             children={() => (
               <CreateBoltcardStack.Navigator
@@ -173,7 +172,7 @@ export default function App(props) {
                   initialParams={{data: null}}
                 />
                 <CreateBoltcardStack.Screen
-                  name="ScanScreen"
+                  name="ScanScreenReset"
                   component={ScanScreen}
                 />
               </CreateBoltcardStack.Navigator>
@@ -184,10 +183,41 @@ export default function App(props) {
             name="Create Bulk Bolt Card"
             component={CreateBulkBoltcardScreen}
           />
+
           {/* <Tab.Screen
-            name="Create Bulk Bolt Card"
-            component={CreateBulkBoltcardScreen}
+            name="Link QR"
+            component={LinkCardQRScreen}
+            options={{
+              headerTitle: props => (
+                <LogoTitle title="Link Card to QR" {...props} />
+              ),
+            }}
           /> */}
+
+          <Tab.Screen
+            name="Link QR"
+            options={{
+              headerTitle: props => (
+                <LogoTitle title="Link Card to QR" {...props} />
+              ),
+            }}
+            children={() => (
+              <CreateBoltcardStack.Navigator
+                screenOptions={{
+                  headerShown: false,
+                }}>
+                <CreateBoltcardStack.Screen
+                  name="Link QR Main"
+                  component={LinkCardQRScreen}
+                  initialParams={{data: null}}
+                />
+                <CreateBoltcardStack.Screen
+                  name="ScanScreen"
+                  component={ScanScreen}
+                />
+              </CreateBoltcardStack.Navigator>
+            )}
+          />
           <Tab.Screen
             name="Help"
             component={HelpScreen}
@@ -195,13 +225,13 @@ export default function App(props) {
               headerTitle: props => <LogoTitle title="Help" {...props} />,
             }}
           />
-          {/* <Tab.Screen 
-            name="Test" 
-            component={TestScreen} 
-          /> */}
         </Tab.Navigator>
       </NavigationContainer>
-      <ErrorModal modalText={modalText} modalVisible={modalVisible} setModalVisible={setModalVisible} />
+      <ErrorModal
+        modalText={modalText}
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+      />
       <Toast />
     </PaperProvider>
   );
