@@ -12,7 +12,7 @@ export default function ScanScreen({route, navigation}) {
   const devices = useCameraDevices();
   const device = devices.back;
 
-  const {backScreen} = route.params;
+  const {backScreen, credentials} = route.params;
 
   // console.log('Scan Screen backScreen, backRoot', backScreen, backRoot);
   const [frameProcessor, barcodes] = useScanBarcodes([BarcodeFormat.QR_CODE], {
@@ -30,7 +30,10 @@ export default function ScanScreen({route, navigation}) {
     console.log('scan success');
     console.dir(data);
     const cardNonce = getQueryParam(data, 'c');
-    navigation.navigate(backScreen, {data: cardNonce, timestamp: Date.now()});
+    navigation.navigate(backScreen, {
+      data: {otc: cardNonce, credentials},
+      timestamp: Date.now(),
+    });
   };
 
   const goBack = e => {
@@ -63,28 +66,3 @@ export default function ScanScreen({route, navigation}) {
     )
   );
 }
-
-const styles = StyleSheet.create({
-  barcodeTextURL: {
-    fontSize: 20,
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  centerText: {
-    flex: 1,
-    fontSize: 18,
-    padding: 32,
-    color: '#777',
-  },
-  textBold: {
-    fontWeight: '500',
-    color: '#000',
-  },
-  buttonText: {
-    fontSize: 21,
-    color: 'rgb(0,122,255)',
-  },
-  buttonTouchable: {
-    padding: 16,
-  },
-});

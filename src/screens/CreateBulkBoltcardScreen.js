@@ -29,6 +29,7 @@ const CardStatus = {
 };
 
 const ADMIN_URL = Config.ADMIN_URL;
+const CARD_MODULE_PUBLIC_KEY = Config.CARD_MODULE_PUBLIC_KEY;
 const NOSTR_PRIVATE_KEY = Config.NOSTR_PRIVATE_KEY;
 
 export default function CreateBulkBoltcardScreen(props) {
@@ -86,10 +87,14 @@ export default function CreateBulkBoltcardScreen(props) {
         ToastAndroid.TOP,
       );
 
-      const event = createInitializeCardEvent(_cardUID, {
-        uuid: _skin.value,
-        name: _skin.label,
-      });
+      const event = createInitializeCardEvent(
+        _cardUID,
+        {
+          uuid: _skin.value,
+          name: _skin.label,
+        },
+        CARD_MODULE_PUBLIC_KEY,
+      );
 
       event.pubkey = getPublicKey(NOSTR_PRIVATE_KEY);
       event.id = getEventHash(event);
