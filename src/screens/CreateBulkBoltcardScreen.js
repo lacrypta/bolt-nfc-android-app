@@ -12,13 +12,13 @@ import {
   Image,
 } from 'react-native';
 import {Card, Title} from 'react-native-paper';
-import {generateKeys} from '../utils/card';
 import Config from 'react-native-config';
 
 import skins from '../constants/skins';
 import NfcManager, {NfcTech} from 'react-native-nfc-manager';
 import WriteModal from '../components/WriteModal';
 import {createInitializeCardEvent} from '../lib/utils';
+
 import {getEventHash, getPublicKey, getSignature} from 'nostr-tools';
 
 const CardStatus = {
@@ -62,7 +62,12 @@ export default function CreateBulkBoltcardScreen(props) {
         return;
       }
 
-      requestCreateCard(_cardUID, skin);
+      try {
+        requestCreateCard(_cardUID, skin);
+      } catch (e) {
+        alert(e.reason);
+        setCardStatus(CardStatus.IDLE);
+      }
     },
     [requestCreateCard, skin],
   );
@@ -73,6 +78,7 @@ export default function CreateBulkBoltcardScreen(props) {
       // Make request to create card
 
       const url = `${ADMIN_URL}/ntag424`;
+      console.info('url', url);
       // create request
       ToastAndroid.showWithGravity(
         `Creating card : ${url}`,
@@ -97,11 +103,8 @@ export default function CreateBulkBoltcardScreen(props) {
       })
         .then(response => response.json())
         .then(json => {
-          if (!json.success) {
-            setError(data.reason);
-            return;
-          }
-          const data = json.data.content;
+          console.info('json', JSON.stringify(json));
+          const data = json.content;
           if (
             !(
               data.lnurlw_base &&
@@ -177,6 +180,11 @@ export default function CreateBulkBoltcardScreen(props) {
   // On mount
   useEffect(() => {
     // NfcManager.start();
+    // console.info('getPublicKey');
+    // console.info(getPublicKey);
+    // const pubkey = getPublicKey(NOSTR_PRIVATE_KEY);
+    // console.info('pubkey');
+    // console.info(pubkey);
   }, []);
 
   return (
