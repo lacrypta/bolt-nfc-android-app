@@ -27,7 +27,7 @@ export function createInitializeCardEvent(cardUID, design, cardModulePubKey) {
       ['p', cardModulePubKey],
       ['t', 'card-init-request'],
     ],
-    content: body,
+    content: JSON.stringify(body),
   };
 }
 
