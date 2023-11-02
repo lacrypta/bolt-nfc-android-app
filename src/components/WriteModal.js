@@ -71,6 +71,7 @@ export default function WriteModal(props) {
       if (privateUID) {
         await Ntag424.setPrivateUid();
       }
+      // 9 is the offset of the "lnurlw://" length
       const piccOffset = ndefMessage.indexOf('p=') + 9;
       const macOffset = ndefMessage.indexOf('c=') + 9;
 
