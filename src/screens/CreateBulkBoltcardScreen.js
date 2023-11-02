@@ -31,12 +31,12 @@ const CardStatus = {
 const ADMIN_URL = Config.ADMIN_URL;
 const CARD_MODULE_PUBLIC_KEY = Config.CARD_MODULE_PUBLIC_KEY;
 const NOSTR_PRIVATE_KEY = Config.NOSTR_PRIVATE_KEY;
+const LNURLW_ENDPOINT = Config.LNURLW_ENDPOINT;
 
 export default function CreateBulkBoltcardScreen(props) {
   const [cardData, setCardData] = useState();
 
   const [cardStatus, setCardStatus] = useState(CardStatus.IDLE);
-  const [error, setError] = useState();
 
   const [openSkin, setOpenSkin] = useState(false);
   const [skin, setSkin] = useState();
@@ -73,70 +73,69 @@ export default function CreateBulkBoltcardScreen(props) {
     [requestCreateCard, skin],
   );
 
-  const requestCreateCard = useCallback(
-    async (_cardUID, _skin) => {
-      setCardStatus(CardStatus.CREATING_CARD);
-      // Make request to create card
+  const requestCreateCard = useCallback(async (_cardUID, _skin) => {
+    setCardStatus(CardStatus.CREATING_CARD);
+    // Make request to create card
 
-      const url = `${ADMIN_URL}/ntag424`;
-      console.info('url', url);
-      // create request
-      ToastAndroid.showWithGravity(
-        `Creating card : ${url}`,
-        ToastAndroid.SHORT,
-        ToastAndroid.TOP,
-      );
+    const url = `${ADMIN_URL}/ntag424`;
+    console.info('url', url);
+    // create request
+    ToastAndroid.showWithGravity(
+      `Creating card : ${url}`,
+      ToastAndroid.SHORT,
+      ToastAndroid.TOP,
+    );
 
-      const event = createInitializeCardEvent(
-        _cardUID,
-        {
-          uuid: _skin.value,
-          name: _skin.label,
-        },
-        CARD_MODULE_PUBLIC_KEY,
-      );
+    const event = createInitializeCardEvent(
+      _cardUID,
+      {
+        uuid: _skin.value,
+        name: _skin.label,
+      },
+      CARD_MODULE_PUBLIC_KEY,
+    );
 
-      event.pubkey = getPublicKey(NOSTR_PRIVATE_KEY);
-      event.id = getEventHash(event);
-      event.sig = getSignature(event, NOSTR_PRIVATE_KEY);
+    event.pubkey = getPublicKey(NOSTR_PRIVATE_KEY);
+    event.id = getEventHash(event);
+    event.sig = getSignature(event, NOSTR_PRIVATE_KEY);
 
-      console.info('skin', _skin);
-      console.info('cardUID', _cardUID);
-      fetch(url, {
-        method: 'POST',
-        body: JSON.stringify(event),
+    console.info('skin', _skin);
+    console.info('cardUID', _cardUID);
+
+    console.info('event');
+    console.info(JSON.stringify(event));
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(event),
+    })
+      .then(response => {
+        console.info('response', JSON.stringify(response));
+
+        if (!response.ok) {
+          throw new Error(`Server returned error ${response.status}`);
+        }
+        return response.json();
       })
-        .then(response => response.json())
-        .then(json => {
-          console.info('json', JSON.stringify(json));
-          const data = json.content;
-          if (
-            !(
-              data.lnurlw_base &&
-              data.k0 &&
-              data.k1 &&
-              data.k2 &&
-              data.k3 &&
-              data.k4
-            )
-          ) {
-            setError(
-              'The JSON response must contain lnurlw_base, k0, k1, k2, k3, k4 ',
-            );
-            return;
-          }
-          setCardStatus(CardStatus.WRITING);
-          setCardData(data);
-        })
-        .catch(_error => {
-          alert(_error.message);
+      .then(json => {
+        const data = JSON.parse(json.content);
+        if (!(data.k0 && data.k1 && data.k2 && data.k3 && data.k4)) {
           setCardStatus(CardStatus.IDLE);
-          console.error(_error);
-          setError(_error.message);
-        });
-    },
-    [skin],
-  );
+          alert('The JSON response must contain k0, k1, k2, k3, k4');
+          return;
+        }
+        setCardStatus(CardStatus.WRITING);
+        data.lnurlw_base = LNURLW_ENDPOINT;
+        setCardData(data);
+      })
+      .catch(_error => {
+        alert(_error.message);
+        setCardStatus(CardStatus.IDLE);
+        console.error(_error);
+      });
+  }, []);
 
   const startReading = useCallback(async () => {
     await NfcManager.start();
