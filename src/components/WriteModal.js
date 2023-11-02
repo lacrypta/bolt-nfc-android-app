@@ -71,29 +71,31 @@ export default function WriteModal(props) {
       if (privateUID) {
         await Ntag424.setPrivateUid();
       }
-      const piccOffset = ndefMessage.indexOf('p=') + 9;
-      const macOffset = ndefMessage.indexOf('c=') + 9;
+      const piccOffset = ndefMessage.indexOf('p=') + 1;
+      const macOffset = ndefMessage.indexOf('c=') + 1;
+
       //change file settings
       await Ntag424.setBoltCardFileSettings(piccOffset, macOffset);
+
       //get uid
       const uid = await Ntag424.getCardUid();
       console.log('************* UID *************', uid);
 
       //change keys
       console.log('changekey 1');
-      await Ntag424.changeKey('01', key0, k0, '01');
+      await Ntag424.changeKey('01', key0, k1, '01');
       setKey1Changed(true);
       console.log('changekey 2');
-      await Ntag424.changeKey('02', key0, k1, '01');
+      await Ntag424.changeKey('02', key0, k2, '01');
       setKey2Changed(true);
       console.log('changekey 3');
-      await Ntag424.changeKey('03', key0, k2, '01');
+      await Ntag424.changeKey('03', key0, k3, '01');
       setKey3Changed(true);
       console.log('changekey 4');
-      await Ntag424.changeKey('04', key0, k3, '01');
+      await Ntag424.changeKey('04', key0, k4, '01');
       setKey4Changed(true);
       console.log('changekey 0');
-      await Ntag424.changeKey('00', key0, k4, '01');
+      await Ntag424.changeKey('00', key0, k0, '01');
       setKey0Changed(true);
 
       //set offset for ndef header
