@@ -107,14 +107,26 @@ export default function LinkCardQRScreen({route}) {
     event.id = getEventHash(event);
     event.sig = getSignature(event, NOSTR_PRIVATE_KEY);
 
+    console.info('##### EVENT ######');
+    console.info(JSON.stringify(event));
     fetch(url, {
       method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(event),
     })
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          alert('Error from server' + response.status);
+          return;
+        }
+        return response.json();
+      })
       .then(json => {
         console.info('json', JSON.stringify(json));
-        const data = json.content;
+        const data = JSON.parse(json.content);
+        console.info('##### DEVUELVE DATA ######');
         console.info(JSON.stringify(data));
         startTapping();
       })
