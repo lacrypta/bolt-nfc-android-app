@@ -71,8 +71,8 @@ export default function WriteModal(props) {
       if (privateUID) {
         await Ntag424.setPrivateUid();
       }
-      const piccOffset = ndefMessage.indexOf('p=') + 1;
-      const macOffset = ndefMessage.indexOf('c=') + 1;
+      const piccOffset = ndefMessage.indexOf('p=') + 9;
+      const macOffset = ndefMessage.indexOf('c=') + 9;
 
       //change file settings
       await Ntag424.setBoltCardFileSettings(piccOffset, macOffset);
