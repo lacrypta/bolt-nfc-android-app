@@ -116,18 +116,10 @@ export default function LinkCardQRScreen({route}) {
       },
       body: JSON.stringify(event),
     })
-      .then(response => {
+      .then(async response => {
         if (!response.ok) {
-          alert('Error from server' + response.status);
-          return;
+          throw new Error('Error from server' + response.status);
         }
-        return response.json();
-      })
-      .then(json => {
-        console.info('json', JSON.stringify(json));
-        const data = JSON.parse(json.content);
-        console.info('##### DEVUELVE DATA ######');
-        console.info(JSON.stringify(data));
         startTapping();
       })
       .catch(_error => {
