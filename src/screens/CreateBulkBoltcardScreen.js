@@ -40,6 +40,7 @@ export default function CreateBulkBoltcardScreen(props) {
 
   const [openSkin, setOpenSkin] = useState(false);
   const [skin, setSkin] = useState();
+  const [error, setError] = useState();
 
   const navigation = useNavigation();
 
@@ -78,7 +79,7 @@ export default function CreateBulkBoltcardScreen(props) {
     // Make request to create card
 
     const url = `${ADMIN_URL}/ntag424`;
-    console.info('url', url);
+    // console.info('url', url);
     // create request
     ToastAndroid.showWithGravity(
       `Creating card : ${url}`,
@@ -99,11 +100,11 @@ export default function CreateBulkBoltcardScreen(props) {
     event.id = getEventHash(event);
     event.sig = getSignature(event, NOSTR_PRIVATE_KEY);
 
-    console.info('skin', _skin);
-    console.info('cardUID', _cardUID);
+    // console.info('skin', _skin);
+    // console.info('cardUID', _cardUID);
 
-    console.info('event');
-    console.info(JSON.stringify(event));
+    // console.info('event');
+    // console.info(JSON.stringify(event));
     fetch(url, {
       method: 'POST',
       headers: {
@@ -112,7 +113,7 @@ export default function CreateBulkBoltcardScreen(props) {
       body: JSON.stringify(event),
     })
       .then(response => {
-        console.info('response', JSON.stringify(response));
+        // console.info('response', JSON.stringify(response));
 
         if (!response.ok) {
           throw new Error(`Server returned error ${response.status}`);
@@ -131,6 +132,7 @@ export default function CreateBulkBoltcardScreen(props) {
         setCardData(data);
       })
       .catch(_error => {
+        setError(JSON.stringify(_error));
         alert(_error.message);
         setCardStatus(CardStatus.IDLE);
         console.error(_error);
@@ -146,8 +148,7 @@ export default function CreateBulkBoltcardScreen(props) {
       await NfcManager.requestTechnology(NfcTech.IsoDep);
       const tag = await NfcManager.getTag();
 
-      console.info('tag:');
-      console.dir(tag);
+      // console.info('tag:');
       onReadCard(tag);
     } catch (e) {
       setCardStatus(CardStatus.IDLE);
@@ -171,6 +172,7 @@ export default function CreateBulkBoltcardScreen(props) {
   useEffect(() => {
     switch (cardStatus) {
       case CardStatus.READING:
+        setError();
         setCardData();
         startReading();
         break;
@@ -267,6 +269,24 @@ export default function CreateBulkBoltcardScreen(props) {
           </Card.Content>
         </Card>
       )}
+
+      {error && (
+        <Card
+          style={{
+            marginBottom: 20,
+            marginTop: 10,
+            marginHorizontal: 10,
+            zIndex: 1000,
+          }}>
+          <Card.Content>
+            <>
+              <Title>error</Title>
+              <Text>{error}</Text>
+            </>
+          </Card.Content>
+        </Card>
+      )}
+
       <WriteModal
         visible={cardStatus === CardStatus.WRITING}
         onCancel={() => setCardStatus(CardStatus.IDLE)}
